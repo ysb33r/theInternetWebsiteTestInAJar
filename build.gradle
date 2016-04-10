@@ -4,14 +4,17 @@ buildscript {
     }
     dependencies {
         classpath "commons-httpclient:commons-httpclient:3.1"
+        classpath "com.github.jruby-gradle:jruby-gradle-jar-plugin:1.2.0"
     }
 }
 
 plugins {
     id 'java'
     id 'org.ysb33r.vfs' version '1.0-beta8'
-    id "com.github.jruby-gradle.jar" version "1.1.0"
+//    id "com.github.jruby-gradle.jar" version "1.2.0"
 }
+
+apply plugin: 'com.github.jruby-gradle.jar'
 
 jruby {
     defaultVersion = '9.0.5.0'
@@ -23,11 +26,16 @@ ext {
     downloadDir = file("${buildDir}/download")
 }
 
+group = 'org.ysb33r'
+version = theInternetVersion
+sourceCompatibility = 1.7
+
 repositories {
     jcenter{}
 }
 
 dependencies {
+    compile "org.jruby:jruby-complete:${jruby.defaultVersion}"
     gems 'rubygems:sinatra:1.4.7'
     gems 'rubygems:sinatra-flash:0.3.0'
     gems 'rubygems:sinatra-contrib:1.4.6'
@@ -59,6 +67,29 @@ task runApp( type : com.github.jrubygradle.JRubyExec ) {
     workingDir theInternetDir
     configuration 'gems'
     dependsOn unpack
+}
+
+jrubyJar {
+    initScript library()
+    into 'the-internet', {
+        from theInternetDir
+    }
+    from project.sourceSets.main.output
+    dependsOn unpack, classes
+    configuration 'gems'
+}
+
+jar.enabled = false
+
+plugins.withType(JavaPlugin) {
+    project.tasks.withType(GroovyCompile) { task ->
+        task.sourceCompatibility = project.sourceCompatibility
+        task.targetCompatibility = project.targetCompatibility
+    }
+    project.tasks.withType(JavaCompile) { task ->
+        task.sourceCompatibility = project.sourceCompatibility
+        task.targetCompatibility = project.targetCompatibility
+    }
 }
 
 //jrubyJar {
