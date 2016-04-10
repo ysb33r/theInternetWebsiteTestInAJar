@@ -1,0 +1,12 @@
+apply plugin : 'groovy'
+
+dependencies {
+    testCompile project(':theinternet-webtest')
+    testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
+}
+
+compileTestGroovy.dependsOn ':theinternet-webtest:jrubyJar'
+
+task foo << {
+    configurations.testCompile.files.each { println it }
+}

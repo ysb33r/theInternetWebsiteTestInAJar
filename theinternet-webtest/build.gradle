@@ -1,0 +1,95 @@
+import org.gradle.api.internal.artifacts.publish.ArchivePublishArtifact
+import org.gradle.api.internal.java.JavaLibrary
+import org.gradle.api.internal.plugins.DefaultArtifactPublicationSet
+
+apply plugin : 'java'
+apply plugin : 'maven'
+apply plugin : 'org.ysb33r.vfs'
+apply plugin : 'com.github.jruby-gradle.jar'
+apply plugin : 'org.ysb33r.bintray'
+
+jruby {
+    defaultVersion = '9.0.5.0'
+}
+
+ext {
+    theInternetDir = file("${buildDir}/the-internet-${theInternetVersion}")
+    downloadDir = file("${buildDir}/download")
+}
+
+dependencies {
+    compile "org.jruby:jruby-complete:${jruby.defaultVersion}"
+    compile "org.jruby.mains:jruby-mains:${jrubyMainsVer}"
+    gems 'rubygems:sinatra:1.4.7'
+    gems 'rubygems:sinatra-flash:0.3.0'
+    gems 'rubygems:sinatra-contrib:1.4.6'
+    gems 'rubygems:zurb-foundation:4.3.2'
+    gems 'rubygems:compass:1.0.3'
+    gems 'rubygems:faker:1.6.3'
+}
+
+task download( type : org.ysb33r.gradle.vfs.tasks.VfsCopy ) {
+    from "https://github.com/tourdedave/the-internet/archive/${theInternetVersion}.zip"
+    into downloadDir
+}
+
+task unpack( type : Copy ) {
+    dependsOn download
+    from zipTree("${downloadDir}/${theInternetVersion}.zip")
+    into buildDir
+
+    // This removes the bundler reference
+    filesMatching '*/server.rb', { fcd ->
+        fcd.filter { line ->
+            (line =~ /require 'bundler/) ? null : line
+        }
+    }
+}
+
+task runApp( type : com.github.jrubygradle.JRubyExec ) {
+    script "${theInternetDir}/server.rb"
+    workingDir theInternetDir
+    configuration 'gems'
+    dependsOn unpack
+}
+
+jrubyJar {
+    initScript library()
+    into 'the-internet', {
+        from theInternetDir
+    }
+    from 'src/main/ruby/'
+    from project.sourceSets.main.output
+    dependsOn unpack, classes
+    configuration 'gems'
+    jrubyMainsVersion jrubyMainsVer
+
+    // I don't want the 'jruby appendix on the filename
+    appendix = null
+}
+
+test {
+    dependsOn unpack
+}
+
+
+jar.enabled = false  // Disable jar task, then jrubyJar artefact becomes the main one.
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+plugins.withType(JavaPlugin) {
+    project.tasks.withType(GroovyCompile) { task ->
+        task.sourceCompatibility = project.sourceCompatibility
+        task.targetCompatibility = project.targetCompatibility
+    }
+    project.tasks.withType(JavaCompile) { task ->
+        task.sourceCompatibility = project.sourceCompatibility
+        task.targetCompatibility = project.targetCompatibility
+    }
+}
+
+install.mustRunAfter ':servicetest:test'
+/*
+uploadArchives.mustRunAfter ':servicetest:test'
+ */
+
