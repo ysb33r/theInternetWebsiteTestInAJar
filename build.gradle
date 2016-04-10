@@ -74,6 +74,7 @@ jrubyJar {
     into 'the-internet', {
         from theInternetDir
     }
+    from 'src/main/ruby/'
     from project.sourceSets.main.output
     dependsOn unpack, classes
     configuration 'gems'
