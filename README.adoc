@@ -1,0 +1,42 @@
+= The Internet Web in a Jar
+:author: Schalk W. Cronjé
+
+This is a JRuby packaged version of https://github.com/tourdedave[Dave Haeffner's]
+https://github.com/tourdedave/the-internet[The Internet] project. I have packaged it
+up for the main purposes of allowing people to learn the use of web UI testing frameworks
+on the UI such as Selenium and http://gebish.org[Geb].
+
+If you want to see a running version of the original Ruby app have a look at  http://the-internet.herokuapp.com.
+
+This little project has two aims:
+
+* Ability to run the website within a unittest [*DONE*]
+* Ability to run it as a standalone app on any OS that has a JVM installed, without installing any additional
+libraries. [*IN PROGRESS*].
+
+== Use in a unittest
+
+NOTE: Currently the artifact is not published online as yet. (will be soon). For now clone this repo and
+build it with `./gradlew build install`. It will place the current SNAPSHOT in your local Maven repo.
+
+.Usage in a spock test
+```groovy
+import org.ysb33r.theinternet.TestableWebServer
+
+class testExampleSpec extends Specification {
+
+    @Shared
+    @AutoCleanup("stop")
+    TestableWebServer server = new TestableWebServer() // <1>
+
+    void setupSpec() {
+        server.start()
+    }
+
+}
+```
+<1> By default this will listen on port `4567`.
+
+== Running standalone
+
+*TBC*

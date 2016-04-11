@@ -11,6 +11,22 @@ public class TestableWebServer implements Runnable {
 
     }
 
+    /** Instantiates the server with a specific port number
+     *
+     * @param portno
+     */
+    public TestableWebServer(int portno) {
+        port = portno;
+    }
+
+    /** Get the port number this server has been given to start on.
+     *
+     * @return Port number
+     */
+    int getPort() {
+        return port;
+    }
+
     /**
      * When an object implementing interface <code>Runnable</code> is used
      * to create a thread, starting the thread causes the object's
@@ -24,7 +40,7 @@ public class TestableWebServer implements Runnable {
      */
     @Override
     public void run() {
-        JarMain.main("the-internet/server.rb");
+        JarMain.main("the-internet/server.rb",String.valueOf(port));
     }
 
     public void start() {
@@ -42,13 +58,18 @@ public class TestableWebServer implements Runnable {
         }
     }
 
-    /** ENtry point if run from command-line. Do not use this if called form code.
+    /** Entry point if run from command-line. Do not use this if called from code.
      * Use {@link #start} instead.
      * @param args Ignored
      */
     static public void main(String[] args) {
-        new TestableWebServer().run();
+        if(args.length > 0) {
+            new TestableWebServer(Integer.parseInt(args[0])).run();
+        } else {
+            new TestableWebServer().run();
+        }
     }
 
     private Thread service;
+    int port = 4567;
 }

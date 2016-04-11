@@ -1,8 +1,14 @@
 apply plugin : 'groovy'
 
+ext.seleniumVer = '2.52.0'
+
 dependencies {
     testCompile project(':theinternet-webtest')
     testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
+    testCompile "org.gebish:geb-spock:0.13.0"
+    testRuntime "org.seleniumhq.selenium:selenium-support:${seleniumVer}"
+    testRuntime "org.seleniumhq.selenium:selenium-firefox-driver:${seleniumVer}"
+
 }
 
 compileTestGroovy.dependsOn ':theinternet-webtest:jrubyJar'

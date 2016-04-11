@@ -1,0 +1,2 @@
+To be completed, although I can say that it will be Apache v2 for the JARs.
+Code for `the-internet` will be whatever it is licensed under.

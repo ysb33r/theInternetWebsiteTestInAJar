@@ -1,5 +1,8 @@
 package org.ysb33r.theinternet
 
+import geb.spock.GebSpec
+import spock.lang.AutoCleanup
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Timeout
 
@@ -7,21 +10,25 @@ import spock.lang.Timeout
 /**
  * @author Schalk W. Cronjé
  */
-class TestableWebServerSpec extends Specification {
+class TestableWebServerSpec extends GebSpec {
 
-    @Timeout(65)
-    def "Start and stop the service"() {
-        given:
-        def ws = new TestableWebServer()
+    static final int PORT = 4567
+
+    @Shared
+    @AutoCleanup("stop")
+    TestableWebServer server = new TestableWebServer()
+
+    void setupSpec() {
+        server.start()
+        sleep 10000
+    }
+
+    def "Check that we can load a page"() {
 
         when:
-        ws.start()
-        println "starting..."
-        sleep 20000
-        println "stopping"
-        ws.stop()
+        go "http://localhost:${PORT}/checkboxes"
 
         then:
-        true // Expect to complete without exception.
+        $('h3').text() == 'Checkboxes'
     }
 }
